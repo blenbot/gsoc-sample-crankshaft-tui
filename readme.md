@@ -26,8 +26,11 @@ Crankshaft TUI delivers a feature-rich, real-time terminal interface to monitor 
 ### Building from Source
 
 Clone the repository and build:
+
 git clone https://github.com/blenbot/crankshaft-tui.git
+
 cd crankshaft-tui
+
 cargo build --release
 
 
@@ -36,10 +39,12 @@ cargo build --release
 ### Running the Demo
 
 To quickly explore Crankshaft TUI, launch the demo:
+
 cargo run --example demo
 
 
-Prerequisites
+Prerequisites:
+
 Rust 1.70.0 or newer
 
 Cargo package manager
@@ -47,7 +52,9 @@ Cargo package manager
 Building from Source
 bash
 # Clone the repository
+
 git clone https://github.com/yourusername/crankshaft-tui.git
+
 cd crankshaft-tui
 
 # Build the project
