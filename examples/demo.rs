@@ -20,6 +20,7 @@ use ratatui::prelude::Rect;
 use ratatui::widgets::Paragraph;
 use ratatui::style::{Style, Color};
 use std::time::Duration;
+use crankshaft_tui::state::HealthStatus;
 use tokio::time::sleep;
 
 use crankshaft_tui::state::{AppState, TaskUpdate, BackendUpdate, Temporality};
@@ -62,15 +63,19 @@ async fn display_startup_animation(terminal: &mut Terminal<CrosstermBackend<io::
     Ok(())
 }
 
-fn render_dashboard_header(frame: &mut ratatui::Frame, app_state: &AppState) {
+fn render_dashboard_header(frame: &mut ratatui::Frame, app_state: &AppState, ui: &Ui) {
     let header_height = 3;
     let header_area = Rect::new(0, 0, frame.size().width, header_height);
     
+    // Get system info
+    let cpu_usage = app_state.resources.cpu_current;
+    let mem_usage = app_state.resources.memory_current;
+    
     // Create stylish header
-    let title = format!(" CRANKSHAFT MONITORING DASHBOARD ");
-    let subtitle = format!(" Tasks: {} | Backends: {} | Mode: {} ", 
-        app_state.tasks.len(), 
-        app_state.backends.len(),
+    let title = " 🔧 CRANKSHAFT MONITORING DASHBOARD ";
+    let subtitle = format!(" CPU: {:.1}% | Memory: {:.1}% | Mode: {} ", 
+        cpu_usage, 
+        mem_usage,
         match app_state.temporality {
             Temporality::Live => "LIVE",
             Temporality::Paused => "PAUSED",
@@ -107,9 +112,21 @@ fn draw_help_modal(frame: &mut ratatui::Frame) {
     let area = frame.size();
     let popup_area = centered_rect(60, 70, area);
     
-    // Create a clear background
-    let clear = ratatui::widgets::Clear;
-    frame.render_widget(clear, popup_area);
+    // Create a clear background with shadow effect
+    let shadow_area = Rect::new(
+        popup_area.x + 1,
+        popup_area.y + 1,
+        popup_area.width,
+        popup_area.height
+    );
+    frame.render_widget(ratatui::widgets::Clear, shadow_area);
+    frame.render_widget(
+        Paragraph::new("").style(Style::default().bg(Color::DarkGray)),
+        shadow_area
+    );
+    
+    // Clear the main help area
+    frame.render_widget(ratatui::widgets::Clear, popup_area);
     
     // Help content
     let help_text = vec![
@@ -174,11 +191,14 @@ fn draw_help_modal(frame: &mut ratatui::Frame) {
         ]),
     ];
     
+    // Enhanced rendering with background and borders
     let help_widget = ratatui::widgets::Paragraph::new(help_text)
         .block(ratatui::widgets::Block::default()
             .title(" Help ")
+            .title_style(Style::default().fg(Color::Yellow).add_modifier(ratatui::style::Modifier::BOLD))
             .borders(ratatui::widgets::Borders::ALL)
-            .border_style(Style::default().fg(Color::Blue)))
+            .border_style(Style::default().fg(Color::Cyan)))
+        .style(Style::default().bg(Color::Black))
         .wrap(ratatui::widgets::Wrap { trim: true });
     
     frame.render_widget(help_widget, popup_area);
@@ -192,6 +212,54 @@ fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
     let popup_y = (r.height - popup_height) / 2;
     
     Rect::new(popup_x, popup_y, popup_width, popup_height)
+}
+
+fn render_status_bar(
+    frame: &mut ratatui::Frame,
+    area: Rect,
+    state: &AppState,
+    ui: &Ui,
+    start_time: std::time::Instant,
+    last_key: &str,
+) {
+    // Calculate uptime
+    let uptime = start_time.elapsed();
+    let uptime_str = format!(
+        "{}:{:02}:{:02}", 
+        uptime.as_secs() / 3600,
+        (uptime.as_secs() % 3600) / 60, 
+        uptime.as_secs() % 60
+    );
+    
+    // Get task statistics
+    let active_tasks = state.active_task_count();
+    let total_tasks = state.tasks.len();
+    
+    // Count backends by health status
+    let healthy_backends = state.backends.values().filter(|b| b.health == HealthStatus::Healthy).count();
+    let total_backends = state.backends.len();
+    
+    // Build status text
+    let status_text = format!(
+        " {} | View: {:?} | Tasks: {}/{} | Backends: {}/{} | Uptime: {} | [?]Help | [q]Quit",
+        match state.temporality {
+            Temporality::Live => "🟢 LIVE",
+            Temporality::Paused => "⏸️ PAUSED",
+            _ => "⟳ UPDATING",
+        },
+        ui.current_view(),
+        active_tasks,
+        total_tasks,
+        healthy_backends, 
+        total_backends,
+        uptime_str
+    );
+    
+    frame.render_widget(
+        Paragraph::new(status_text)
+            .style(Style::default().bg(Color::DarkGray).fg(Color::White)),
+        area
+    );
 }
 
 #[tokio::main]
@@ -225,40 +293,39 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mut current_view = ViewState::Dashboard;
     let mut show_help = false;
     
+    // Add this at the beginning of main():
+    let start_time = std::time::Instant::now();
+    
     // Run the event loop
     let mut should_exit = false;
     while !should_exit {
-        // Draw the UI
+        // Replace your terminal.draw call with this:
         terminal.draw(|frame| {
             if let Ok(state) = app_state.lock() {
-                // Render custom header first
-                render_dashboard_header(frame, &state);
+                // Create the main content area (leaving space for header and status)
+                let total_area = frame.size();
+                let header_height = 3;
+                let status_height = 1;
                 
-                // Create adjusted content area for main UI
-                let mut content_area = frame.size();
-                content_area.y += 3; // Move down below header
-                content_area.height -= 4; // Make room for header and status bar
+                // Define areas for different UI sections
+                let header_area = Rect::new(0, 0, total_area.width, header_height);
+                let status_area = Rect::new(0, total_area.height - status_height, total_area.width, status_height);
+                let content_area = Rect::new(
+                    0, 
+                    header_height, 
+                    total_area.width, 
+                    total_area.height - header_height - status_height
+                );
                 
-                // Pass adjusted content area to UI render
+                // Render custom header
+                render_dashboard_header(frame, &state, &ui);
+                
+                // Use UI's render_in_area method to render content in the proper area
                 ui.render_in_area(frame, &state, content_area);
                 
-                // Add status bar at the bottom
-                let area = frame.size();
-                let debug_area = Rect::new(0, area.height - 1, area.width, 1);
+                // Render dynamic status bar
+                render_status_bar(frame, status_area, &state, &ui, start_time, &last_key);
                 
-                // Status bar rendering continues...
-                let status_text = format!(
-                    " {} | View: {:?} | [d]ashboard | [t]asks | [b]ackends | [Tab]cycle | [←↑→↓]navigate | [Enter]select | [?]help | [p]ause | [q]uit ",
-                    last_key,
-                    current_view
-                );
-                
-                frame.render_widget(
-                    Paragraph::new(status_text)
-                        .style(Style::default().bg(Color::DarkGray).fg(Color::White)),
-                    debug_area
-                );
-
                 // Draw help modal if enabled
                 if show_help {
                     draw_help_modal(frame);

@@ -84,4 +84,12 @@ impl TaskState {
     pub fn can_cancel(&self) -> bool {
         self.is_active() && self.cancellation_token.is_some()
     }
+    
+    pub fn elapsed(&self) -> chrono::Duration {
+        if let Some(end_time) = self.end_time {
+            end_time - self.start_time
+        } else {
+            chrono::Utc::now() - self.start_time
+        }
+    }
 }

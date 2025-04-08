@@ -17,9 +17,9 @@ impl HelpView {
     pub fn render(
         frame: &mut Frame,
         area: Rect,
-        app_state: &AppState,
+        _app_state: &AppState,
         theme: &Theme,
-        current_view: &ViewState,
+        _current_view: &ViewState,
     ) {
         // Create a centered popup area that's 80% of the screen
         let popup_area = Self::centered_rect(60, 70, area);

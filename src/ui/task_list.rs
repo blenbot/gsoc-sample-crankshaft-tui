@@ -4,6 +4,7 @@ use ratatui::Frame;
 use ratatui::layout::{Layout, Constraint, Direction, Rect};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, TableState, Table, Row, Cell, Paragraph};
+use ratatui::style::{Style, Color};
 
 use crate::state::{AppState, TaskState, TaskStatus};
 use crate::ui::Theme;
@@ -150,38 +151,7 @@ impl TaskListView {
         
         // Format task rows
         let rows = tasks.into_iter().map(|task| {
-            // Style the status cell based on the task status
-            let status_style = match task.status {
-                TaskStatus::Created => theme.created_style,
-                TaskStatus::Queued => theme.queued_style,
-                TaskStatus::Running => theme.running_style,
-                TaskStatus::Completed => theme.completed_style,
-                TaskStatus::Failed => theme.failed_style,
-                TaskStatus::Cancelled => theme.cancelled_style,
-            };
-            
-            let progress_text = if let Some(progress) = task.progress {
-                format!("{:.1}%", progress * 100.0)
-            } else {
-                "-".to_string()
-            };
-            
-            let duration = if let Some(end_time) = task.end_time {
-                format_duration(&(end_time - task.start_time))
-            } else {
-                format_duration(&(chrono::Utc::now() - task.start_time))
-            };
-            
-            Row::new(vec![
-                Cell::from(task.id.to_string()),
-                Cell::from(task.name.clone()),
-                Cell::from(task.status.to_string()).style(status_style),
-                Cell::from(progress_text),
-                Cell::from(duration),
-                Cell::from(task.backend.clone()),
-                Cell::from(format!("{:.1}%", task.cpu_usage)),
-                Cell::from(format!("{:.1} MB", task.memory_usage)),
-            ])
+            format_task_row(task, view.table_state.selected() == Some(task.id.try_into().unwrap()))
         });
         
         // Create the table
@@ -331,6 +301,50 @@ fn format_duration(duration: &chrono::Duration) -> String {
         format!("{}m {}s", seconds / 60, seconds % 60)
     } else {
         format!("{}h {}m", seconds / 3600, (seconds % 3600) / 60)
+    }
+}
+
+fn format_task_row(task: &TaskState, is_selected: bool) -> Row {
+    let progress_display = if let Some(progress) = task.progress {
+        let percentage = (progress * 100.0).round() as u8;
+        let bar_width = 20;
+        let filled = (bar_width as f32 * progress) as usize;
+        let empty = bar_width - filled;
+        
+        format!("[{}{}] {}%", 
+            "█".repeat(filled), 
+            "░".repeat(empty), 
+            percentage
+        )
+    } else {
+        match task.status {
+            TaskStatus::Created => "[    pending    ]".to_string(),
+            TaskStatus::Queued => "[    waiting    ]".to_string(),
+            TaskStatus::Running => "[    running    ]".to_string(),
+            TaskStatus::Completed => "[   completed   ]".to_string(),
+            TaskStatus::Failed => "[     failed     ]".to_string(),
+            TaskStatus::Cancelled => "[   cancelled   ]".to_string(),
+        }
+    };
+    
+    // Create the row with the progress bar
+    Row::new(vec![
+        Cell::from(format!("{}", task.id)).style(Style::default()),
+        Cell::from(task.name.clone()),
+        Cell::from(task.status.to_string()).style(get_status_style(task.status)),
+        Cell::from(progress_display),
+        Cell::from(format_duration(&task.elapsed())),
+    ])
+}
+
+fn get_status_style(status: TaskStatus) -> Style {
+    match status {
+        TaskStatus::Created => Style::default().fg(Color::Blue),
+        TaskStatus::Queued => Style::default().fg(Color::Yellow),
+        TaskStatus::Running => Style::default().fg(Color::Green),
+        TaskStatus::Completed => Style::default().fg(Color::Cyan),
+        TaskStatus::Failed => Style::default().fg(Color::Red),
+        TaskStatus::Cancelled => Style::default().fg(Color::Gray),
     }
 }
 

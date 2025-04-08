@@ -182,9 +182,9 @@ impl DashboardView {
         
         // Create bars for visual representation
         let bars_data = [
-            ("Running ", status_counts.get(&TaskStatus::Running).unwrap_or(&0) * 100),
-            ("Queued  ", status_counts.get(&TaskStatus::Queued).unwrap_or(&0) * 100),
-            ("Failed  ", status_counts.get(&TaskStatus::Failed).unwrap_or(&0) * 100),
+            ("Running  │", status_counts.get(&TaskStatus::Running).unwrap_or(&0) * 100),
+            ("Queued   │", status_counts.get(&TaskStatus::Queued).unwrap_or(&0) * 100),
+            ("Failed   │", status_counts.get(&TaskStatus::Failed).unwrap_or(&0) * 100),
         ];
         
         // Render the paragraph and bar chart side by side
