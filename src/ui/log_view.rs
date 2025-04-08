@@ -16,7 +16,7 @@ impl LogView {
     pub fn render(
         frame: &mut Frame,
         area: Rect,
-        app_state: &AppState,
+        _app_state: &AppState,
         theme: &Theme,
     ) {
         // Create a block for the logs

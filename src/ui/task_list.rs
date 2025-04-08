@@ -243,7 +243,7 @@ impl TaskListView {
     }
     
     /// Handle keyboard input.
-    pub fn handle_key_event(&mut self, key: crossterm::event::KeyEvent, app_state: &mut AppState) -> eyre::Result<()> {
+    pub fn handle_key_event(&mut self, key: crossterm::event::KeyEvent, _app_state: &mut AppState) -> eyre::Result<()> {
         use crossterm::event::KeyCode;
         
         match key.code {
@@ -276,11 +276,7 @@ impl TaskListView {
     pub fn next(&mut self) {
         let i = match self.table_state.selected() {
             Some(i) => {
-                if i >= 0 { // Check if the task list is empty
-                    i + 1
-                } else {
-                    0
-                }
+                i+1
             }
             None => 0,
         };

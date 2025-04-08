@@ -24,7 +24,7 @@ pub use help::HelpView;
 use crossterm::event::KeyEvent;
 use eyre::Result;
 use ratatui::Frame;
-use ratatui::layout::{Rect};
+use ratatui::layout::Rect;
 
 use crate::state::{AppState, Temporality};
 
@@ -227,12 +227,27 @@ impl Ui {
         self.render_status_line(frame, area, app_state);
     }
 
+    /// Render the UI in a specific area
+    pub fn render_in_area(&self, frame: &mut Frame, app_state: &AppState, area: Rect) {
+        match &self.state {
+            ViewState::Dashboard => DashboardView::render(frame, area, app_state, &self.theme),
+            ViewState::TasksList => TaskListView::render(frame, area, app_state, &self.theme),
+            ViewState::BackendsList => BackendView::render_list(frame, area, app_state, &self.theme),
+            ViewState::TaskInstance(view) => view.render(frame, area, app_state, &self.theme),
+            ViewState::BackendInstance(view) => view.render(frame, area, app_state, &self.theme),
+        }
+        
+        // Render help if active
+        if self.show_help {
+            self.render_help(frame, area, app_state);
+        }
+    }
 
     pub fn navigate_to(&mut self, view: ViewState) {
         self.state = view;
     }
     
-    // Add these two methods
+    
     
     /// Handle terminal resize events
     pub fn handle_resize(&mut self, width: u16, height: u16) {

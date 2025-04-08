@@ -129,40 +129,62 @@ impl DashboardView {
         // Calculate total
         let total_tasks = app_state.tasks.len();
         
-        // Create status summary text
+        // Create status summary text with enhanced colors
         let mut text = vec![
             Line::from(vec![
                 Span::styled("Total Tasks: ", Style::default().add_modifier(Modifier::BOLD)),
-                Span::raw(total_tasks.to_string()),
+                Span::raw(format!("{}", total_tasks)),
+            ]),
+            Line::from(""),
+            Line::from(vec![
+                Span::styled("Created: ", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    format!("{}", status_counts[&TaskStatus::Created]),
+                    Style::default().fg(Color::LightBlue)
+                ),
+            ]),
+            Line::from(vec![
+                Span::styled("Queued: ", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    format!("{}", status_counts[&TaskStatus::Queued]),
+                    Style::default().fg(Color::LightYellow)
+                ),
+            ]),
+            Line::from(vec![
+                Span::styled("Running: ", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    format!("{}", status_counts[&TaskStatus::Running]),
+                    Style::default().fg(Color::LightGreen)
+                ),
+            ]),
+            Line::from(vec![
+                Span::styled("Completed: ", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    format!("{}", status_counts[&TaskStatus::Completed]),
+                    Style::default().fg(Color::LightCyan)
+                ),
+            ]),
+            Line::from(vec![
+                Span::styled("Failed: ", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    format!("{}", status_counts[&TaskStatus::Failed]),
+                    Style::default().fg(Color::LightRed)
+                ),
+            ]),
+            Line::from(vec![
+                Span::styled("Cancelled: ", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    format!("{}", status_counts[&TaskStatus::Cancelled]),
+                    Style::default().fg(Color::LightMagenta)
+                ),
             ]),
         ];
         
-        // Add colored status counts
-        let status_styles = [
-            (TaskStatus::Created, Color::Blue),
-            (TaskStatus::Queued, Color::Yellow),
-            (TaskStatus::Running, Color::Green),
-            (TaskStatus::Completed, Color::Cyan),
-            (TaskStatus::Failed, Color::Red),
-            (TaskStatus::Cancelled, Color::Gray),
-        ];
-        
-        for (status, color) in status_styles.iter() {
-            let count = status_counts.get(status).unwrap_or(&0);
-            text.push(Line::from(vec![
-                Span::styled(
-                    format!("{}: ", status.to_string()),
-                    Style::default().fg(*color).add_modifier(Modifier::BOLD)
-                ),
-                Span::raw(count.to_string()),
-            ]));
-        }
-        
         // Create bars for visual representation
         let bars_data = [
-            ("Running", status_counts.get(&TaskStatus::Running).unwrap_or(&0) * 100),
-            ("Queued", status_counts.get(&TaskStatus::Queued).unwrap_or(&0) * 100),
-            ("Failed", status_counts.get(&TaskStatus::Failed).unwrap_or(&0) * 100),
+            ("Running ", status_counts.get(&TaskStatus::Running).unwrap_or(&0) * 100),
+            ("Queued  ", status_counts.get(&TaskStatus::Queued).unwrap_or(&0) * 100),
+            ("Failed  ", status_counts.get(&TaskStatus::Failed).unwrap_or(&0) * 100),
         ];
         
         // Render the paragraph and bar chart side by side
