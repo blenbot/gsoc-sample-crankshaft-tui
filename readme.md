@@ -26,13 +26,11 @@ Crankshaft TUI delivers a feature-rich, real-time terminal interface to monitor 
 ### Building from Source
 
 Clone the repository and build:
-
+'''
 git clone https://github.com/blenbot/crankshaft-tui.git
-
 cd crankshaft-tui
-
 cargo build --release
-
+'''
 
 ## Usage
 
@@ -52,19 +50,18 @@ Cargo package manager
 Building from Source
 bash
 # Clone the repository
-
+'''
 git clone https://github.com/yourusername/crankshaft-tui.git
-
 cd crankshaft-tui
-
+'''
 # Build the project
 cargo build --release
 Usage
 Running the Demo
 The fastest way to explore Crankshaft TUI is by launching the included demo:
-
-bash
+'''
 cargo run --example demo
+'''
 This spins up a fully functional interface with simulated task and backend data to play with.
 
 ## Architecture
@@ -87,46 +84,3 @@ This spins up a fully functional interface with simulated task and backend data 
 - **Event Handling**
   - Event-driven design for processing user input.
   - Clear separation between events and state updates.
-
-- **Data Flow**
-
-  Input Events → UI Controller → State Updates → UI Rendering  
-  ↑                             ↑  
-  |                             |  
-  └──── Task/Backend Monitors  ─┘
-
-Project Structure
-text
-src/
-├── app.rs            # Application logic
-├── event/            # Event handling
-│   ├── handler.rs
-│   └── mod.rs
-├── main.rs           # Program entry point
-├── monitor/          # Task and backend monitoring
-│   ├── backend.rs
-│   ├── mod.rs
-│   └── task.rs
-├── state/            # Application state management
-│   ├── backend.rs
-│   ├── mod.rs
-│   ├── resource.rs
-│   └── task.rs
-└── ui/               # User interface components
-    ├── backend_view.rs
-    ├── dashboard.rs
-    ├── help.rs
-    ├── log_view.rs
-    ├── mod.rs
-    ├── task_detail.rs
-    ├── task_list.rs
-    ├── theme.ts
-    └── widgets/
-        ├── mod.rs
-        ├── progress.rs
-        ├── sparkline.rs
-        ├── stat_panel.rs
-        └── tabbed_view.rs
-        
-# Generate documentation
-cargo doc --open
