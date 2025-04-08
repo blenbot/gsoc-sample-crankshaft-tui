@@ -1,0 +1,56 @@
+[package]
+name = "crankshaft-tui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Crankshaft dependencies
+crankshaft = { git = "https://github.com/stjude-rust-labs/crankshaft", features = ["engine"] }
+crankshaft-engine = { git = "https://github.com/stjude-rust-labs/crankshaft", package = "crankshaft-engine" }
+rand = "0.8"
+
+# TUI framework
+ratatui = { version = "0.25.0", features = ["crossterm"] }
+crossterm = { version = "0.27.0", features = ["event-stream"] }
+
+# Async runtime
+tokio = { version = "1.35.0", features = ["full"] }
+tokio-util = "0.7.10"
+tokio-stream = "0.1.14"
+
+# Error handling
+color-eyre = "0.6.2"
+eyre = "0.6.11"
+thiserror = "1.0.50"
+
+# Logging
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+
+# Utilities
+chrono = "0.4.31"
+futures = "0.3.30"
+serde = { version = "1.0.193", features = ["derive"] }
+serde_json = "1.0.108"
+unicode-width = "0.1.11"
+itertools = "0.12.0"
+
+# Memory optimization
+string-interner = "0.14.0"
+
+[dev-dependencies]
+mockall = "0.12.1"
+pretty_assertions = "1.4.0"
+rstest = "0.18.2"
+
+[features]
+default = ["crossterm"]
+crossterm = []
+
+[[bin]]
+name = "crankshaft-tui"
+path = "src/main.rs"
+
+
+
+
