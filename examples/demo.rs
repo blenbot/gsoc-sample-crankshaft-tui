@@ -241,13 +241,13 @@ fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
     Rect::new(popup_x, popup_y, popup_width, popup_height)
 }
 
+// Update the render_status_bar function to remove last_key:
 fn render_status_bar(
     frame: &mut ratatui::Frame,
     area: Rect,
     state: &AppState,
     ui: &Ui,
     start_time: std::time::Instant,
-    last_key: &str,
 ) {
     // Calculate uptime
     let uptime = start_time.elapsed();
@@ -266,9 +266,9 @@ fn render_status_bar(
     let healthy_backends = state.backends.values().filter(|b| b.health == HealthStatus::Healthy).count();
     let total_backends = state.backends.len();
     
-    // Build status text
+    // Build status text - removed "Last Key" from format string
     let status_text = format!(
-        " {} | View: {:?} | Tasks: {}/{} | Backends: {}/{} | Last Key: {} | Uptime: {} | [?]Help | [q]Quit",
+        " {} | View: {:?} | Tasks: {}/{} | Backends: {}/{} | Uptime: {} | [?]Help | [q]Quit",
         match state.temporality {
             Temporality::Live => "🟢 LIVE",
             Temporality::Paused => "⏸️ PAUSED",
@@ -279,7 +279,6 @@ fn render_status_bar(
         total_tasks,
         healthy_backends, 
         total_backends,
-        last_key,
         uptime_str
     );
     
@@ -355,7 +354,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 ui.render_in_area(frame, &state, content_area);
                 
                 // Render dynamic status bar
-                render_status_bar(frame, status_area, &state, &ui, start_time, &last_key);
+                render_status_bar(frame, status_area, &state, &ui, start_time);
                 
                 // Draw help modal if enabled
                 if show_help {
@@ -390,17 +389,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
                                 match key.code {
                                     KeyCode::Char('d') => {
                                         ui.navigate_to(ViewState::Dashboard);
-                                        println!("Switched to Dashboard view");
                                         current_view = ViewState::Dashboard;
                                     },
                                     KeyCode::Char('t') => {
                                         ui.navigate_to(ViewState::TasksList);
-                                        println!("Switched to Tasks List view");
                                         current_view = ViewState::TasksList;
                                     },
                                     KeyCode::Char('b') => {
                                         ui.navigate_to(ViewState::BackendsList);
-                                        println!("Switched to Backends List view");
                                         current_view = ViewState::BackendsList;
                                     },
                                     KeyCode::Tab => {
@@ -436,13 +432,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
                                                 Temporality::Unpausing => Temporality::Paused,
                                             };
                                         },
-                                        UpdateKind::SelectTask(task_id) => {
-                                            // Task was selected, details already handled by UI
-                                            println!("Selected task: {}", task_id);
+                                        UpdateKind::SelectTask(_task_id) => {
+                                            
                                         },
-                                        UpdateKind::SelectBackend(backend_name) => {
-                                            // Backend was selected, details already handled by UI
-                                            println!("Selected backend: {}", backend_name);
+                                        UpdateKind::SelectBackend(_backend_name) => {
+                                            
                                         },
                                         _ => {}
                                     }

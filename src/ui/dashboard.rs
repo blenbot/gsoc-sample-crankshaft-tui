@@ -156,7 +156,7 @@ impl DashboardView {
             Line::from(vec![
                 Span::styled("Running: ", Style::default().add_modifier(Modifier::BOLD)),
                 Span::styled(
-                    format!("{} {}", status_counts[&TaskStatus::Running], Self::get_spinner_frame(app_state)),
+                    format!("{}", status_counts[&TaskStatus::Running]),
                     Style::default().fg(Color::LightGreen)
                 ),
             ]),
@@ -185,9 +185,9 @@ impl DashboardView {
         
         // Create bars for visual representation
         let bars_data = [
-            ("Running", status_counts.get(&TaskStatus::Running).unwrap_or(&0) * 100),
-            ("Queued", status_counts.get(&TaskStatus::Queued).unwrap_or(&0) * 100),
-            ("Failed", status_counts.get(&TaskStatus::Failed).unwrap_or(&0) * 100),
+            ("Running  ", status_counts.get(&TaskStatus::Running).unwrap_or(&0) * 100),
+            ("Queued   ", status_counts.get(&TaskStatus::Queued).unwrap_or(&0) * 100),
+            ("Failed   ", status_counts.get(&TaskStatus::Failed).unwrap_or(&0) * 100),
         ];
         
         // Render the paragraph and bar chart side by side
