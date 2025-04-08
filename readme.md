@@ -26,22 +26,24 @@ Crankshaft TUI delivers a feature-rich, real-time terminal interface to monitor 
 ### Building from Source
 
 Clone the repository and build:
-'''
+
+```
 git clone https://github.com/blenbot/crankshaft-tui.git
 
 cd crankshaft-tui
 
 cargo build --release
-'''
+```
 
 ## Usage
 
 ### Running the Demo
 
 To quickly explore Crankshaft TUI, launch the demo:
-'''
+
+```
 cargo run --example demo
-'''
+```
 
 Prerequisites:
 
