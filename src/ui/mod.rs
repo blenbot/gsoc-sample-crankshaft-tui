@@ -127,80 +127,40 @@ impl Ui {
                 self.state = ViewState::BackendsList;
                 return Ok(UpdateKind::Other);
             },
+            KeyCode::Char('p') => return Ok(UpdateKind::TogglePause),
             _ => {} 
         }
         
-        // Handle view-specific input by directly accessing the view object
+        // Delegate to view-specific handlers
         match &mut self.state {
             ViewState::Dashboard => {
-                // Dashboard-specific input handling
-                Ok(UpdateKind::Other)
+                self.handle_dashboard_input(key, app_state)
             },
-            
             ViewState::TasksList => {
-                match key.code {
-                    KeyCode::Enter => {
-                        // Find selected task and switch to detail view
-                        if let Some(task_id) = app_state.selected_task_id() {
-                            // Create a copy of the task_id before moving it into the new view
-                            let task_id_value = *task_id;
-                            self.state = ViewState::TaskInstance(TaskDetailView::new(task_id_value));
-                            return Ok(UpdateKind::SelectTask(task_id_value));
-                        }
-                    },
-                    KeyCode::Down | KeyCode::Char('j') => {
-                        app_state.select_next_task();
-                    },
-                    KeyCode::Up | KeyCode::Char('k') => {
-                        app_state.select_prev_task();
-                    },
-                    _ => {}
-                }
-                Ok(UpdateKind::Other)
+                self.handle_tasks_list_input(key, app_state)
             },
-            
             ViewState::BackendsList => {
-                match key.code {
-                    KeyCode::Enter => {
-                        // Find selected backend and switch to detail view
-                        if let Some(backend_name) = app_state.selected_backend_name() {
-                            self.state = ViewState::BackendInstance(BackendView::new(backend_name.clone()));
-                            return Ok(UpdateKind::SelectBackend(backend_name));
-                        }
-                    },
-                    KeyCode::Down | KeyCode::Char('j') => {
-                        app_state.select_next_backend();
-                    },
-                    KeyCode::Up | KeyCode::Char('k') => {
-                        app_state.select_prev_backend();
-                    },
-                    _ => {}
-                }
-                Ok(UpdateKind::Other)
+                self.handle_backends_list_input(key, app_state)
             },
-            
             ViewState::TaskInstance(view) => {
-                // Handle escape key here directly
-                if key.code == KeyCode::Esc {
-                    self.state = ViewState::TasksList;
-                    Ok(UpdateKind::ExitTaskView)
-                } else {
-                    // Forward other keys to the view
-                    view.handle_key_event(key, app_state)?;
-                    Ok(UpdateKind::Other)
+                // Create mutable view for the handler
+                let mut view_clone = view.clone();
+                let result = self.handle_task_detail_input(&mut view_clone, key, app_state);
+                // If the view was modified, update it in self.state
+                if let ViewState::TaskInstance(ref mut v) = self.state {
+                    *v = view_clone;
                 }
+                result
             },
-            
             ViewState::BackendInstance(view) => {
-                // Handle escape key here directly
-                if key.code == KeyCode::Esc {
-                    self.state = ViewState::BackendsList;
-                    Ok(UpdateKind::ExitBackendView)
-                } else {
-                    // Forward other keys to the view
-                    view.handle_key_event(key, app_state)?;
-                    Ok(UpdateKind::Other)
+                // Create mutable view for the handler
+                let mut view_clone = view.clone();
+                let result = self.handle_backend_detail_input(&mut view_clone, key, app_state);
+                // If the view was modified, update it in self.state
+                if let ViewState::BackendInstance(ref mut v) = self.state {
+                    *v = view_clone;
                 }
+                result
             },
         }
     }

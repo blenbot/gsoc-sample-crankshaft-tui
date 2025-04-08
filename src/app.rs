@@ -203,4 +203,9 @@ impl App {
     fn toggle_help(&mut self) {
         self.ui.toggle_help();
     }
+    
+    /// Returns the application configuration.
+    pub fn get_config(&self) -> &AppConfig {
+        &self.config
+    }
 }

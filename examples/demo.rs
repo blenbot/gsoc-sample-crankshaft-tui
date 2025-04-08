@@ -38,35 +38,60 @@ async fn display_startup_animation(terminal: &mut Terminal<CrosstermBackend<io::
         r" \_____|_|  \__,_|_| |_|_|\_\___/_| |_|\__,_|_|  \__|",
     ];
 
-    // Calculate logo dimensions
-    let logo_height = logo.len();
-    let logo_width = logo.iter().map(|line| line.len()).max().unwrap_or(0);
+    // Calculate dimensions
+    let logo_height = logo.len() as u16;
+    let logo_width = logo.iter().map(|s| s.len()).max().unwrap_or(0) as u16;
 
-    // Render the logo centered in the terminal
-    terminal.draw(|frame| {
-        let size = frame.size();
-        let start_row = (size.height.saturating_sub(logo_height as u16)) / 2;
-        let start_col = (size.width.saturating_sub(logo_width as u16)) / 2;
-
-        for (row_idx, line) in logo.iter().enumerate() {
-            let y = start_row + row_idx as u16;
-            if y < size.height {
-                let paragraph = Paragraph::new(line.clone()).style(Style::default().fg(Color::Cyan));
-                frame.render_widget(paragraph, Rect::new(start_col, y, logo_width as u16, 1));
+    // Show startup message with progress bar
+    let loading_steps = ["Connecting to engine", "Loading task data", "Initializing backends", "Starting monitors"];
+    let progress_bar_width = 50;
+    
+    for (i, step) in loading_steps.iter().enumerate() {
+        let progress = (i + 1) as f32 / loading_steps.len() as f32;
+        let filled = (progress_bar_width as f32 * progress) as usize;
+        
+        terminal.draw(|frame| {
+            let size = frame.size();
+            let start_row = (size.height.saturating_sub(logo_height + 4)) / 2;
+            let start_col = (size.width.saturating_sub(logo_width)) / 2;
+            
+            // Render logo
+            for (i, line) in logo.iter().enumerate() {
+                frame.render_widget(
+                    Paragraph::new(*line).style(Style::default().fg(Color::Cyan)),
+                    Rect::new(start_col, start_row + i as u16, logo_width, 1)
+                );
             }
-        }
-    })?;
-
-    // Pause for 2 seconds to display the logo
-    sleep(Duration::from_secs(2)).await;
-
+            
+            // Render progress info
+            let progress_text = format!("{} [{}{}] {:.0}%", 
+                step,
+                "█".repeat(filled),
+                " ".repeat(progress_bar_width - filled),
+                progress * 100.0
+            );
+            
+            frame.render_widget(
+                Paragraph::new(progress_text).style(Style::default().fg(Color::Yellow)),
+                Rect::new(
+                    start_col, 
+                    start_row + logo_height + 2, 
+                    progress_bar_width as u16 + step.len() as u16 + 10, 
+                    1
+                )
+            );
+        })?;
+        
+        sleep(Duration::from_millis(500)).await;
+    }
+    
+    sleep(Duration::from_millis(500)).await;
+    
     Ok(())
 }
 
-fn render_dashboard_header(frame: &mut ratatui::Frame, app_state: &AppState, ui: &Ui) {
-    let header_height = 3;
-    let header_area = Rect::new(0, 0, frame.size().width, header_height);
-    
+// Change render_dashboard_header to return a widget instead of rendering directly
+fn render_dashboard_header(app_state: &AppState, ui: &Ui) -> impl ratatui::widgets::Widget {
     // Get system info
     let cpu_usage = app_state.resources.cpu_current;
     let mem_usage = app_state.resources.memory_current;
@@ -83,14 +108,18 @@ fn render_dashboard_header(frame: &mut ratatui::Frame, app_state: &AppState, ui:
         }
     );
     
-    // Create header block
-    let header = ratatui::widgets::Paragraph::new(ratatui::text::Text::from(vec![
+    // Use it for styling:
+    let title_style = match ui.current_view() {
+        ViewState::Dashboard => Style::default().fg(Color::Cyan).add_modifier(ratatui::style::Modifier::BOLD),
+        _ => Style::default().fg(Color::Blue).add_modifier(ratatui::style::Modifier::BOLD)
+    };
+    
+    // Create and return header block
+    ratatui::widgets::Paragraph::new(ratatui::text::Text::from(vec![
         ratatui::text::Line::from(vec![
             ratatui::text::Span::styled(
                 title, 
-                Style::default()
-                    .fg(Color::Cyan)
-                    .add_modifier(ratatui::style::Modifier::BOLD)
+                title_style
             ),
         ]),
         ratatui::text::Line::from(vec![
@@ -103,9 +132,7 @@ fn render_dashboard_header(frame: &mut ratatui::Frame, app_state: &AppState, ui:
     .block(ratatui::widgets::Block::default()
         .borders(ratatui::widgets::Borders::ALL)
         .border_style(Style::default().fg(Color::Blue))
-        .style(Style::default().bg(Color::Black)));
-    
-    frame.render_widget(header, header_area);
+        .style(Style::default().bg(Color::Black)))
 }
 
 fn draw_help_modal(frame: &mut ratatui::Frame) {
@@ -241,7 +268,7 @@ fn render_status_bar(
     
     // Build status text
     let status_text = format!(
-        " {} | View: {:?} | Tasks: {}/{} | Backends: {}/{} | Uptime: {} | [?]Help | [q]Quit",
+        " {} | View: {:?} | Tasks: {}/{} | Backends: {}/{} | Last Key: {} | Uptime: {} | [?]Help | [q]Quit",
         match state.temporality {
             Temporality::Live => "🟢 LIVE",
             Temporality::Paused => "⏸️ PAUSED",
@@ -252,6 +279,7 @@ fn render_status_bar(
         total_tasks,
         healthy_backends, 
         total_backends,
+        last_key,
         uptime_str
     );
     
@@ -318,7 +346,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 );
                 
                 // Render custom header
-                render_dashboard_header(frame, &state, &ui);
+                frame.render_widget(
+                    render_dashboard_header(&state, &ui), 
+                    header_area
+                );
                 
                 // Use UI's render_in_area method to render content in the proper area
                 ui.render_in_area(frame, &state, content_area);
@@ -353,6 +384,37 @@ async fn main() -> Result<(), Box<dyn Error>> {
                                 if key.code == KeyCode::Char('?') || key.code == KeyCode::F(1) {
                                     show_help = !show_help;
                                     continue;
+                                }
+                                
+                                // Improved view navigation with visual feedback
+                                match key.code {
+                                    KeyCode::Char('d') => {
+                                        ui.navigate_to(ViewState::Dashboard);
+                                        println!("Switched to Dashboard view");
+                                        current_view = ViewState::Dashboard;
+                                    },
+                                    KeyCode::Char('t') => {
+                                        ui.navigate_to(ViewState::TasksList);
+                                        println!("Switched to Tasks List view");
+                                        current_view = ViewState::TasksList;
+                                    },
+                                    KeyCode::Char('b') => {
+                                        ui.navigate_to(ViewState::BackendsList);
+                                        println!("Switched to Backends List view");
+                                        current_view = ViewState::BackendsList;
+                                    },
+                                    KeyCode::Tab => {
+                                        // Cycle through views with smooth transition
+                                        let next_view = match current_view {
+                                            ViewState::Dashboard => ViewState::TasksList,
+                                            ViewState::TasksList => ViewState::BackendsList,
+                                            ViewState::BackendsList => ViewState::Dashboard,
+                                            _ => current_view.clone(),
+                                        };
+                                        ui.navigate_to(next_view.clone());
+                                        current_view = next_view;
+                                    },
+                                    _ => {} 
                                 }
                                 
                                 // Process key events through the UI controller

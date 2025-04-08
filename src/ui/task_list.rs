@@ -304,7 +304,7 @@ fn format_duration(duration: &chrono::Duration) -> String {
     }
 }
 
-fn format_task_row(task: &TaskState, is_selected: bool) -> Row {
+fn format_task_row(task: &TaskState, _is_selected: bool) -> Row {
     let progress_display = if let Some(progress) = task.progress {
         let percentage = (progress * 100.0).round() as u8;
         let bar_width = 20;

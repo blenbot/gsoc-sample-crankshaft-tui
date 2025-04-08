@@ -28,6 +28,9 @@ use crate::ui::widgets::sparkline::Sparkline as CustomSparkline;
 /// Dashboard view showing an overview of all tasks and backends.
 pub struct DashboardView;
 
+// Animation frames for the spinner
+const SPINNER_FRAMES: [&str; 8] = ["|", "/", "-", "\\", "|", "/", "-", "\\"];
+
 impl DashboardView {
     /// Render the dashboard view.
     pub fn render(
@@ -130,7 +133,7 @@ impl DashboardView {
         let total_tasks = app_state.tasks.len();
         
         // Create status summary text with enhanced colors
-        let mut text = vec![
+        let text = vec![
             Line::from(vec![
                 Span::styled("Total Tasks: ", Style::default().add_modifier(Modifier::BOLD)),
                 Span::raw(format!("{}", total_tasks)),
@@ -153,7 +156,7 @@ impl DashboardView {
             Line::from(vec![
                 Span::styled("Running: ", Style::default().add_modifier(Modifier::BOLD)),
                 Span::styled(
-                    format!("{}", status_counts[&TaskStatus::Running]),
+                    format!("{} {}", status_counts[&TaskStatus::Running], Self::get_spinner_frame(app_state)),
                     Style::default().fg(Color::LightGreen)
                 ),
             ]),
@@ -182,9 +185,9 @@ impl DashboardView {
         
         // Create bars for visual representation
         let bars_data = [
-            ("Running  │", status_counts.get(&TaskStatus::Running).unwrap_or(&0) * 100),
-            ("Queued   │", status_counts.get(&TaskStatus::Queued).unwrap_or(&0) * 100),
-            ("Failed   │", status_counts.get(&TaskStatus::Failed).unwrap_or(&0) * 100),
+            ("Running", status_counts.get(&TaskStatus::Running).unwrap_or(&0) * 100),
+            ("Queued", status_counts.get(&TaskStatus::Queued).unwrap_or(&0) * 100),
+            ("Failed", status_counts.get(&TaskStatus::Failed).unwrap_or(&0) * 100),
         ];
         
         // Render the paragraph and bar chart side by side
@@ -413,7 +416,7 @@ impl DashboardView {
     fn render_events(
         frame: &mut Frame,
         area: Rect,
-        app_state: &AppState,
+        _app_state: &AppState,
         theme: &Theme,
     ) {
         // Create placeholder events
@@ -496,6 +499,10 @@ impl DashboardView {
             .style(theme.normal_text);
             
         frame.render_widget(paragraph, area);
+    }
+    
+    pub fn get_spinner_frame(app_state: &AppState) -> &'static str {
+        SPINNER_FRAMES[app_state.animation_frame % SPINNER_FRAMES.len()]
     }
 }
 

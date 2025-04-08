@@ -172,7 +172,7 @@ impl TaskDetailView {
         frame: &mut Frame,
         area: Rect,
         task: &TaskState,
-        app_state: &AppState,
+        _app_state: &AppState,
         theme: &Theme,
     ) {
         // Create a block for the content
@@ -181,7 +181,7 @@ impl TaskDetailView {
             .borders(Borders::ALL)
             .style(theme.block_style);
             
-        let inner = block.inner(area);
+        let _inner = block.inner(area);
         
         // Format task information
         let duration = if let Some(end_time) = task.end_time {
@@ -256,7 +256,7 @@ impl TaskDetailView {
             .borders(Borders::ALL)
             .style(theme.block_style);
             
-        let inner = block.inner(area);
+        let _inner = block.inner(area);
         
         // Get log content from task details if available
         let logs = if let Some(details) = &app_state.current_task_details {
@@ -421,7 +421,7 @@ impl TaskDetailView {
     }
     
     /// Handle keyboard input.
-    pub fn handle_key_event(&mut self, key: KeyEvent, app_state: &mut AppState) -> eyre::Result<()> {
+    pub fn handle_key_event(&mut self, key: KeyEvent, _app_state: &mut AppState) -> eyre::Result<()> {
         use crossterm::event::KeyCode;
         
         match key.code {
