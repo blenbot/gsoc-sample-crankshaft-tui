@@ -80,28 +80,26 @@ Cargo package manager
 
 ## Implementation:
  - **Backend Integration:**
- - The current implementation includes three different backend types:
-
- - *Docker*: For container-based task execution
- - *TES (Task Execution Service)*: For cloud-based execution
- - *Local Runner*: For direct execution on the host system
- - Each backend exposes metrics for utilization, task count, and health status. The system is designed to be extensible for adding more backend types in the future.
+  The current implementation includes three different backend types:
+   - *Docker*: For container-based task execution
+   - *TES (Task Execution Service)*: For cloud-based execution
+   - *Local Runner*: For direct execution on the host system
+   - Each backend exposes metrics for utilization, task count, and health status. The system is designed to be extensible for adding more backend types in the future.
 
  - **Data Visualization:**
- - Custom widgets provide rich visualization of:
-
-  - Task status distribution (bar charts)
-  - Resource utilization over time (sparklines)
-  - Task progress (progress bars)
-  - Health status (color-coded indicators)
+  Custom widgets provide rich visualization of:
+   - Task status distribution (bar charts)
+   - Resource utilization over time (sparklines)
+   - Task progress (progress bars)
+   - Health status (color-coded indicators)
  - **Adaptive UI:**
- - The interface dynamically adjusts to terminal size, reorganizing components to maintain usability even on smaller screens.
+   The interface dynamically adjusts to terminal size, reorganizing components to maintain usability even on smaller screens.
 
 ## Future Roadmap
- - Based on project requirements, these features are planned for future development:
-  - *Log Integration*: Modifying Crankshaft to expose logs through a Backend trait method
-  - *Structured Logging*: Implementing a consistent log format across different backends
-  - *Network Monitoring*: Adding network stream visualization alongside CPU and memory
-  - *Scale Optimization*: Further optimizations for handling 20,000+ workflows efficiently
-  - *Real-time Notifications*: Alert system for critical events
-  - *Custom Filtering*: Advanced task and backend filtering options
+ Based on project requirements, these features are planned for future development:
+   - *Log Integration*: Modifying Crankshaft to expose logs through a Backend trait method
+   - *Structured Logging*: Implementing a consistent log format across different backends
+   - *Network Monitoring*: Adding network stream visualization alongside CPU and memory
+   - *Scale Optimization*: Further optimizations for handling 20,000+ workflows efficiently
+   - *Real-time Notifications*: Alert system for critical events
+   - *Custom Filtering*: Advanced task and backend filtering options
