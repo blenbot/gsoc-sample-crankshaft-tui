@@ -8,14 +8,14 @@ Crankshaft TUI delivers a feature-rich, real-time terminal interface to monitor 
 
 ## Features
 
-**Multi-view Interface**: Seamlessly switch between dashboard, task list, and backend views
-**Real-time Task Monitoring**: Track task creation, execution, completion, and failure as they happen
-**Backend Health Tracking**: Monitor the health and utilization of execution backends
-**Resource Visualization**: View CPU and memory usage with interactive graphs
-**Task Management**: Dive into detailed task information and live logs
-**Adaptive Layout**: Responsive design that adjusts to your terminal size
-**Event Timeline**: See a chronological display of system events and notifications
-**Scale-Ready**: I created this project while keeping in mind scalability which crankshaft will require to handle workflow upto 20,000.
+ - **Multi-view Interface**: Seamlessly switch between dashboard, task list, and backend views
+ - **Real-time Task Monitoring**: Track task creation, execution, completion, and failure as they happen
+ - **Backend Health Tracking**: Monitor the health and utilization of execution backends
+ - **Resource Visualization**: View CPU and memory usage with interactive graphs
+ - **Task Management**: Dive into detailed task information and live logs
+ - **Adaptive Layout**: Responsive design that adjusts to your terminal size
+ - **Event Timeline**: See a chronological display of system events and notifications
+ - **Scale-Ready**: I created this project while keeping in mind scalability which crankshaft will require to handle workflow upto 20,000.
 
 ## Installation
 
