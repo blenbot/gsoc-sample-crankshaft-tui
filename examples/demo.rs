@@ -316,7 +316,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     task_monitor.connect("demo://localhost").await?;
     backend_monitor.connect("demo://localhost").await?;
     
-    let mut last_key = String::new();
+    let mut _last_key = String::new();
     let mut current_view = ViewState::Dashboard;
     let mut show_help = false;
     
@@ -371,7 +371,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     match event {
                         Event::Key(key) => {
                             if key.kind == KeyEventKind::Press {
-                                last_key = format!("{:?}", key);
+                                _last_key = format!("{:?}", key);
                                 
                                 // Global shortcuts
                                 if key.code == KeyCode::Char('q') {
