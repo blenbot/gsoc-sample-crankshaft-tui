@@ -57,25 +57,25 @@ Cargo package manager
 ### Core Components
 
 - **State Management**
-  - *AppState*: Central hub for tracking tasks and backends.
-  - *TaskState*: Maintains details on individual task status, progress, and resource usage.
-  - *BackendState*: Tracks backend health, tasks, and utilization metrics.
+    - *AppState*: Central hub for tracking tasks and backends.
+    - *TaskState*: Maintains details on individual task status, progress, and resource usage.
+    - *BackendState*: Tracks backend health, tasks, and utilization metrics.
 
 - **Monitoring System**
-  - *TaskMonitor*: Asynchronously tracks task status changes.
-  - *BackendMonitor*: Polls backends for health and resource metrics.
-  - Partially uses Tokio to periodically poll Crankshaft for updates (every few seconds), currently only simulated data not connected to actual crankshaft engine which will be one of the implementation for GSOC 2025.
+    - *TaskMonitor*: Asynchronously tracks task status changes.
+    - *BackendMonitor*: Polls backends for health and resource metrics.
+    - Partially uses Tokio to periodically poll Crankshaft for updates (every few seconds), currently only simulated data not connected to actual crankshaft engine which will be one of the implementation for GSOC 2025.
 
 - **User Interface**
- - *Note*: Currently it acts as boilerplate but most of these features are implemented to a good extent
- - *Dashboard View*: Global overview showing task summary, backend health, and recent events
- - *Task List View*: Detailed list of all tasks with filtering and sorting
- - *Backend View*: Backend-specific details with health metrics and task distribution
- - *Detail Views*: In-depth information about specific tasks or backends with tabbed navigation
+   - *Note*: Currently it acts as boilerplate but most of these features are implemented to a good extent
+   - *Dashboard View*: Global overview showing task summary, backend health, and recent events
+   - *Task List View*: Detailed list of all tasks with filtering and sorting
+   - *Backend View*: Backend-specific details with health metrics and task distribution
+   - *Detail Views*: In-depth information about specific tasks or backends with tabbed navigation
 
 - **Event Handling**
-  - Event-driven design for processing user input.
-  - Clear separation between events and state updates.
+   - Event-driven design for processing user input.
+   - Clear separation between events and state updates.
 
 
 ## Implementation:
